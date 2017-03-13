@@ -41,7 +41,7 @@ std::vector<Cell::Value> Cell::getPossibleValues() {
 
 bool Cell::setImpossible(Value value) {
   if (poss_[value]) {
-    poss_[value] == false;
+    poss_[value] = false;
     num_possible_--;
     if (num_possible_ == 0) {
       throw "A cell now has no possible values";
