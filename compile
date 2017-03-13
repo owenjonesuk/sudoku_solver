@@ -1,0 +1,1 @@
+g++.exe -std=c++11 solvesudoku.cpp sudokugrid.cpp cell.cpp -o solvesudokugrid
