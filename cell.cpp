@@ -3,13 +3,8 @@
 
 
 Cell::Cell() : value_(Value::UNSET) {
-  setAllPoss(true);
+  setAllValuesPossible();
 }
-
-/*Cell::Cell(Value v) : value_(v) {
-  setAllPoss(false);
-  poss[v] = true;
-}*/
 
 Cell::Cell(const Cell& other) {
   setValue(other.getValue());
@@ -50,9 +45,16 @@ bool Cell::setImpossible(Value value) {
   return num_possible_ != 0;
 }
 
-void Cell::setAllPoss(bool b){
+void Cell::setAllValuesPossible(){
   for (Value value : Cell::all_values) {
-    poss_[value] = b;
+    poss_[value] = true;
   }
-  num_possible_ = b ? GRID_SIZE + 1 : 0;
+  num_possible_ = GRID_SIZE + 1;
+}
+
+void Cell::setAllValuesImpossible(){
+  for (Value value : Cell::all_values) {
+    poss_[value] = false;
+  }
+  num_possible_ = 0;
 }

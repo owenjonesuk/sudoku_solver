@@ -28,7 +28,6 @@ private:
   int num_possible_;
 public:
   Cell();
-  /*Cell(Value);*/
   Cell(const Cell&);
   Value getValue() const { return value_; }
   void setValue(Value);
@@ -37,6 +36,7 @@ public:
   std::vector<Cell::Value> getPossibleValues();
   bool setImpossible(Value);
 private:
-  void setAllPoss(bool);
+  void setAllValuesPossible();
+  void setAllValuesImpossible();
   void checkValid();
 };
