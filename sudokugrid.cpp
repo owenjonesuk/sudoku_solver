@@ -4,7 +4,7 @@
 #include "sudokugrid.hpp"
 
 std::ostream& operator<<(std::ostream& os, const Cell& cell) {
-  os << cell.getValue();
+  os << static_cast<int>(cell.getValue());
   return os;
 }
 
@@ -29,43 +29,43 @@ SudokuGrid::SudokuGrid(std::string file_location) {
     for (int row = 0; row < GRID_SIZE; row++) {
       getline(file, line);
       for (int col = 0; col < GRID_SIZE; col++) {
-        Cell::Value value =  Cell::UNSET;
+        Value value =  Value::UNSET;
         if (col <= line.length()) {
           switch (line[col]) {
             case '1': {
-              value = Cell::V1;
+              value = Value::V1;
               break;
             }
             case '2': {
-              value = Cell::V2;
+              value = Value::V2;
               break;
             }
             case '3': {
-              value = Cell::V3;
+              value = Value::V3;
               break;
             }
             case '4': {
-              value = Cell::V4;
+              value = Value::V4;
               break;
             }
             case '5': {
-              value = Cell::V5;
+              value = Value::V5;
               break;
             }
             case '6': {
-              value = Cell::V6;
+              value = Value::V6;
               break;
             }
             case '7': {
-              value = Cell::V7;
+              value = Value::V7;
               break;
             }
             case '8': {
-              value = Cell::V8;
+              value = Value::V8;
               break;
             }
             case '9': {
-              value = Cell::V9;
+              value = Value::V9;
               break;
             }
           }
@@ -76,7 +76,7 @@ SudokuGrid::SudokuGrid(std::string file_location) {
   }
 }
 
-bool SudokuGrid::setCellValue(int row, int col, Cell::Value value) {
+bool SudokuGrid::setCellValue(int row, int col, Value value) {
   cell_[row][col].setValue(value);
   bool all_possible = true;
   for (int i = 0; i < GRID_SIZE; i++) {
@@ -99,7 +99,7 @@ void SudokuGrid::setCellsWithOnePossibleValue() {
         if (cell_[i][j].getNumPossible() == 1) {
           something_changed = true;
           int n = 0;
-          for (Cell::Value value : cell_[i][j].getPossibleValues()) {
+          for (Value value : cell_[i][j].getPossibleValues()) {
             setCellValue(i, j, value);
             n++;
           }
@@ -140,7 +140,7 @@ void SudokuGrid::branchAndAddToStack(std::stack<SudokuGrid>& stack) {
   }
   Cell& min_cell = cell_[min_found_i][min_found_j];
   stack.pop();
-  for (Cell::Value value : min_cell.getPossibleValues()) {
+  for (Value value : min_cell.getPossibleValues()) {
     SudokuGrid new_grid = SudokuGrid(*this);
     new_grid.setCellValue(min_found_i, min_found_j, value);
     stack.push(new_grid);

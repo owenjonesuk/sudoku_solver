@@ -9,7 +9,7 @@ public:
   SudokuGrid();
   SudokuGrid(const SudokuGrid&);
   SudokuGrid(std::string);
-  bool setCellValue(int, int, Cell::Value);
+  bool setCellValue(int, int, Value);
   void setCellsWithOnePossibleValue();
   bool isCompleted();
   void branchAndAddToStack(std::stack<SudokuGrid>&);
