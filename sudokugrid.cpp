@@ -1,12 +1,7 @@
 #include <assert.h>
-#include <iostream>
 #include <fstream>
 #include "sudokugrid.hpp"
 
-std::ostream& operator<<(std::ostream& os, const Cell& cell) {
-  os << static_cast<int>(cell.getValue());
-  return os;
-}
 
 SudokuGrid::SudokuGrid() {
 }
@@ -14,7 +9,7 @@ SudokuGrid::SudokuGrid() {
 SudokuGrid::SudokuGrid(const SudokuGrid& other) {
   for (int row = 0; row < GRID_SIZE; row++) {
     for (int col = 0; col < GRID_SIZE; col++) {
-      setCellValue(row, col, other.cell_[row][col].getValue());
+      setCellValue(row, col, other.grid_[row][col].getValue());
     }
   }
 }
@@ -29,65 +24,68 @@ SudokuGrid::SudokuGrid(std::string file_location) {
     for (int row = 0; row < GRID_SIZE; row++) {
       getline(file, line);
       for (int col = 0; col < GRID_SIZE; col++) {
-        Value value =  Value::UNSET;
         if (col <= line.length()) {
-          switch (line[col]) {
-            case '1': {
-              value = Value::V1;
-              break;
-            }
-            case '2': {
-              value = Value::V2;
-              break;
-            }
-            case '3': {
-              value = Value::V3;
-              break;
-            }
-            case '4': {
-              value = Value::V4;
-              break;
-            }
-            case '5': {
-              value = Value::V5;
-              break;
-            }
-            case '6': {
-              value = Value::V6;
-              break;
-            }
-            case '7': {
-              value = Value::V7;
-              break;
-            }
-            case '8': {
-              value = Value::V8;
-              break;
-            }
-            case '9': {
-              value = Value::V9;
-              break;
-            }
-          }
+          setCellValue(row, col, Value(line[col]));
         }
-        setCellValue(row, col, value);
       }
     }
   }
 }
 
-bool SudokuGrid::setCellValue(int row, int col, Value value) {
-  cell_[row][col].setValue(value);
-  bool all_possible = true;
+bool SudokuGrid::setCellValue(const int row, const int col, const Value value) {
+  if (value.isUnset()) {
+    return true;
+  }
+  Cell& target_cell = grid_[row][col];
+#ifdef DEBUG        
+  std::cout << "(0) Setting the value " << convertValueToChar(value)
+            << " for cell (" << row << "," << col << ")"
+            << std::endl;
+#endif
+  target_cell.setValue(value);
+  bool grid_valid = true;
   for (int i = 0; i < GRID_SIZE; i++) {
-    if (i != row) {
-      all_possible = all_possible & cell_[i][col].setImpossible(value);
-    }
-    if (i != col) {
-      all_possible = all_possible & cell_[row][i].setImpossible(value);
+    Cell& cell = grid_[i][col];
+    if (&cell != &target_cell && !cell.isSet()) {
+#ifdef DEBUG        
+      std::cout << "(1) Setting the value " << convertValueToChar(value)
+                << " as impossible for cell (" << i << "," << col << ")"
+                << std::endl;
+#endif
+      grid_valid = grid_valid & grid_[i][col].setImpossible(value);
     }
   }
-  return all_possible;
+  for (int j = 0; j < GRID_SIZE; j++) {
+    Cell& cell = grid_[row][j];
+    if (&cell != &target_cell && !cell.isSet()) {
+#ifdef DEBUG        
+      std::cout << "(2) Setting the value " << convertValueToChar(value)
+                << " as impossible for cell (" << row << "," << j << ")"
+                << std::endl;
+#endif
+      grid_valid = grid_valid & grid_[row][j].setImpossible(value);
+    }
+  }
+  const std::array<std::array<int, 3>, 3> groups = {
+      std::array<int, 3> {0, 1, 2},
+      std::array<int, 3> {3, 4, 5},
+      std::array<int, 3> {6, 7, 8}};
+  const int row_group = row / 3;
+  const int col_group = col / 3;
+  for (int i : groups[row_group]) {
+    for (int j : groups[col_group]) {
+      Cell& cell = grid_[i][j];
+      if (&cell != &target_cell && !cell.isSet()) {
+#ifdef DEBUG        
+        std::cout << "(3) Setting the value " << convertValueToChar(value)
+                  << " as impossible for cell (" << i << "," << j << ")"
+                  << std::endl;
+#endif
+        grid_valid = grid_valid & grid_[i][j].setImpossible(value);
+      }
+    }
+  }
+  return grid_valid;
 }
 
 void SudokuGrid::setCellsWithOnePossibleValue() {
@@ -96,10 +94,11 @@ void SudokuGrid::setCellsWithOnePossibleValue() {
     something_changed = false;
     for (int i = 0; i < GRID_SIZE; ++i) {
       for (int j = 0; j < GRID_SIZE; ++j) {
-        if (cell_[i][j].getNumPossible() == 1) {
+        Cell& cell = grid_[i][j];
+        if (!cell.isSet() && cell.getNumPossible() == 1) {
           something_changed = true;
           int n = 0;
-          for (Value value : cell_[i][j].getPossibleValues()) {
+          for (Value value : grid_[i][j].getPossibleValues()) {
             setCellValue(i, j, value);
             n++;
           }
@@ -111,14 +110,13 @@ void SudokuGrid::setCellsWithOnePossibleValue() {
 }
 
 bool SudokuGrid::isCompleted() {
-  for (auto& cell_row : cell_) {
+  for (auto& cell_row : grid_) {
     for (auto& cell : cell_row) {
-      if (cell.getNumPossible() != 1) {
+      if (!cell.isSet()) {
         return false;
       }
     }
   }
-
   return true;
 }
 
@@ -128,8 +126,8 @@ void SudokuGrid::branchAndAddToStack(std::stack<SudokuGrid>& stack) {
   int min_found_j = -1;
   for (int i = 0; i < GRID_SIZE; ++i) {
     for (int j = 0; j < GRID_SIZE; ++j) {
-      if (!cell_[i][j].isSet()) {
-        int num_possible = cell_[i][j].getNumPossible();
+      if (!grid_[i][j].isSet()) {
+        int num_possible = grid_[i][j].getNumPossible();
         if (num_possible < min_found) {
           min_found = num_possible;
           min_found_i = i;
@@ -138,7 +136,7 @@ void SudokuGrid::branchAndAddToStack(std::stack<SudokuGrid>& stack) {
       }
     }
   }
-  Cell& min_cell = cell_[min_found_i][min_found_j];
+  Cell& min_cell = grid_[min_found_i][min_found_j];
   stack.pop();
   for (Value value : min_cell.getPossibleValues()) {
     SudokuGrid new_grid = SudokuGrid(*this);
@@ -147,22 +145,17 @@ void SudokuGrid::branchAndAddToStack(std::stack<SudokuGrid>& stack) {
   }
 }
 
-void SudokuGrid::Print() {
+void SudokuGrid::print(std::ostream &os) {
   for (int row = 0; row < GRID_SIZE; row++) {
     for (int col = 0; col < GRID_SIZE; col++) {
-      std::cout << cell_[row][col];
+      os << grid_[row][col];
       if (col == 2 || col == 5){
-        std::cout << '|';
+        os << '|';
       }
     }
-    std::cout << '\n';
+    os << '\n';
     if (row == 2 || row == 5){
-      std::cout << "---+---+---\n";
+      os << "---+---+---\n";
     }
   }
 }
-
-// bool SudokuGrid::CheckValidity() {
-    
-    
-// }

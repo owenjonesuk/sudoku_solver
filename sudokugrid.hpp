@@ -4,7 +4,7 @@
 
 class SudokuGrid {
 private:
-  std::array<std::array<Cell, GRID_SIZE>, GRID_SIZE> cell_;
+  std::array<std::array<Cell, GRID_SIZE>, GRID_SIZE> grid_;
 public:
   SudokuGrid();
   SudokuGrid(const SudokuGrid&);
@@ -13,7 +13,5 @@ public:
   void setCellsWithOnePossibleValue();
   bool isCompleted();
   void branchAndAddToStack(std::stack<SudokuGrid>&);
-  void Print();
-private:
-  bool CheckValidity();
+  void print(std::ostream &os);
 };

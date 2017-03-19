@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COMPILER=clang++
-$COMPILER -std=c++11 cell.cpp -c
-$COMPILER -std=c++11 sudokugrid.cpp -c
-$COMPILER -std=c++11 solvesudoku.cpp sudokugrid.o cell.o -o solvesudokugrid
+$COMPILER -std=c++11 -g value.cpp -c
+$COMPILER -std=c++11 -g cell.cpp -c
+$COMPILER -std=c++11 -g sudokugrid.cpp -c
+$COMPILER -std=c++11 -g solvesudoku.cpp sudokugrid.o cell.o value.o -o solvesudokugrid
