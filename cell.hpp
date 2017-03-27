@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <exception>
 #include "value.hpp"
 
 
@@ -20,3 +21,21 @@ public:
   bool setImpossible(Value);
   friend std::ostream& operator<<(std::ostream&, const Cell&);
 };
+
+class ModifyingSetCellException : public std::exception {
+  const char * what () const throw () {
+    return "Cannot modify a cell that is already set";
+  }
+}
+
+class ImpossibleValueException : public std::exception {
+  const char * what () const throw () {
+    return "Cannot set cell to an impossible value";
+  }
+}
+
+class SetImpossibleUnsetException : public std::exception {
+  const char * what () const throw () {
+    return "Cannot set the value UNSET as impossible";
+  }
+}

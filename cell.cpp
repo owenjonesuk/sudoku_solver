@@ -11,14 +11,14 @@ Cell::Cell() : value_(Value()) {
 
 void Cell::setValue(Value new_value) {
   if (isSet()) {
-    throw "trying to call setValue() on a cell that's already set";
+    throw ModifyingSetCellException;
   }
   if (new_value.isUnset()) {
     // nothing to do
     return;
   }
   if (!poss_[new_value]) {
-    throw "Trying to set cell to impossible value";
+    throw ImpossibleValueException;
   }
   value_ = new_value;
   for (Value value : Value::all_values) {
@@ -30,14 +30,14 @@ void Cell::setValue(Value new_value) {
 
 int Cell::getNumPossible() const {
   if (isSet()) {
-    throw "trying to call getNumPossible() on a cell that's already set";
+    throw ModifyingSetCellException;
   }
   return num_possible_;
 }
 
 const std::vector<Value> Cell::getPossibleValues() const {
   if (isSet()) {
-    throw "trying to call getPossibleValues() on a cell that's already set";
+    throw ModifyingSetCellException;
   }
   std::vector<Value> possible_values;
   for (Value value : Value::all_values) {
@@ -50,10 +50,10 @@ const std::vector<Value> Cell::getPossibleValues() const {
 
 bool Cell::setImpossible(Value value) {
   if (isSet()) {
-    throw "trying to call setImpossible() on a cell that's already set";
+    throw ModifyingSetCellException;
   }
   if (value.isUnset()) {
-    throw "Can't set UNSET value impossible without setting the value of the cell";
+    throw SetImpossibleUnsetException;
   }
   if (poss_.at(value)) {
     poss_[value] = false;
