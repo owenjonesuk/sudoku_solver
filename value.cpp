@@ -9,7 +9,7 @@ const char Value::UNSET_CHAR = '.';
 
 Value::Value() : x_(UNSET_CHAR) {}
 
-Value::Value(char input_char) {
+Value::Value(const char input_char) {
   switch (input_char) {
     case '1':
       x_ = '1';
@@ -44,7 +44,7 @@ Value::Value(char input_char) {
   }
 }
 
-bool Value::isUnset() const {
+bool Value::is_unset() const {
   return x_ == UNSET_CHAR;
 }
 

@@ -1,26 +1,28 @@
-#include "cell.hpp"
 #include <algorithm>
+#include "cell.hpp"
+#include <utility>
 
-
-Cell::Cell() : value_(Value()) {
+Cell::Cell(int row, int col) : value_(Value()), row(row), col(col) {
   for (Value value : Value::all_values) {
     poss_[value] = true;
   }
   num_possible_ = Value::all_values.size();
 }
 
-void Cell::setValue(Value new_value) {
-  if (isSet()) {
-    throw ModifyingSetCellException;
+void Cell::set_value(const Value new_value) {
+  if (is_set()) {
+    throw ModifyingSetCellException();
   }
-  if (new_value.isUnset()) {
+  if (new_value.is_unset()) {
     // nothing to do
     return;
   }
   if (!poss_[new_value]) {
-    throw ImpossibleValueException;
+    throw ImpossibleValueException();
   }
   value_ = new_value;
+  // We don't strictly need to keep poss_ and num_possible_ updated, because
+  // they can't be accessed once the cell is set, but we do it anyway
   for (Value value : Value::all_values) {
     poss_[value] = false;
   }
@@ -28,16 +30,16 @@ void Cell::setValue(Value new_value) {
   num_possible_ = 1;
 }
 
-int Cell::getNumPossible() const {
-  if (isSet()) {
-    throw ModifyingSetCellException;
+int Cell::get_num_possible() const {
+  if (is_set()) {
+    throw ModifyingSetCellException();
   }
   return num_possible_;
 }
 
-const std::vector<Value> Cell::getPossibleValues() const {
-  if (isSet()) {
-    throw ModifyingSetCellException;
+const std::vector<Value> Cell::get_possible_values() const {
+  if (is_set()) {
+    throw ModifyingSetCellException();
   }
   std::vector<Value> possible_values;
   for (Value value : Value::all_values) {
@@ -48,21 +50,22 @@ const std::vector<Value> Cell::getPossibleValues() const {
   return possible_values;
 }
 
-bool Cell::setImpossible(Value value) {
-  if (isSet()) {
-    throw ModifyingSetCellException;
+bool Cell::set_impossible(const Value value) {
+  if (is_set()) {
+    throw ModifyingSetCellException();
   }
-  if (value.isUnset()) {
-    throw SetImpossibleUnsetException;
+  if (value.is_unset()) {
+    throw SetImpossibleUnsetException();
   }
   if (poss_.at(value)) {
     poss_[value] = false;
-    num_possible_--;
+    --num_possible_;
   }
+  // return true if the cell still has any possible values
   return num_possible_ != 0;
 }
 
 std::ostream& operator<<(std::ostream& os, const Cell& cell) {
-  os << cell.getValue();
+  os << cell.get_value();
   return os;
 }

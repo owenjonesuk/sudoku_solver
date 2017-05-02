@@ -12,9 +12,10 @@ private:
   char x_;
 public:
   Value();
-  Value(char);
-  bool isUnset() const;
+  Value(const char input_char);
+  bool is_unset() const;
   bool operator ==(const Value&) const;
   bool operator <(const Value&) const;
+  
   friend std::ostream& operator<<(std::ostream&, const Value&);
 };
